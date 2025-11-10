@@ -637,6 +637,9 @@ bleak-esphome==3.4.0
 # homeassistant.components.bluetooth
 bleak-retry-connector==4.4.3
 
+# homeassistant.components.nubert
+bleak==0.21.1
+
 # homeassistant.components.bluetooth
 bleak==1.0.1
 

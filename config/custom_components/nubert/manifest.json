@@ -1,0 +1,17 @@
+{
+  "domain": "nubert",
+  "name": "Nubert BLE Speakers",
+  "version": "0.1.0",
+  "documentation": "https://todo.com",
+  "dependencies": ["bluetooth_adapters"],
+  "codeowners": ["@martix90"],
+  "iot_class": "local_push",
+  "requirements": [],
+  "bluetooth": [
+    {
+      "connectable": true,
+      "service_uuid": "0000a600-0000-1000-8000-00805f9b34fb"
+    }
+  ],
+  "config_flow": true
+}
