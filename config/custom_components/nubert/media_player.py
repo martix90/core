@@ -10,9 +10,10 @@ from homeassistant.components.media_player import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .coordinator import NubertCoordinator
+from .coordinator import SOURCE_ID_TO_NAME, NubertCoordinator
 
 
 async def async_setup_entry(
@@ -25,7 +26,7 @@ async def async_setup_entry(
     async_add_entities([NubertMediaPlayer(coordinator, entry)], True)
 
 
-class NubertMediaPlayer(MediaPlayerEntity):
+class NubertMediaPlayer(CoordinatorEntity, MediaPlayerEntity):
     """Representation of a Nubert speaker."""
 
     _attr_has_entity_name = True
@@ -40,6 +41,10 @@ class NubertMediaPlayer(MediaPlayerEntity):
 
     def __init__(self, coordinator: NubertCoordinator, entry: ConfigEntry) -> None:
         """Initialize the media player."""
+        # Initialize CoordinatorEntity so it registers listeners on the
+        # DataUpdateCoordinator. This sets up coordinator_context used by
+        # the helper base class.
+        super().__init__(coordinator)
         self.coordinator = coordinator
         self._attr_unique_id = entry.entry_id
         self._attr_device_info = {
@@ -66,6 +71,22 @@ class NubertMediaPlayer(MediaPlayerEntity):
         if (volume := self.coordinator.data.get("volume")) is not None:
             return float(volume) / 100
         return None
+
+    @property
+    def source(self) -> str | None:
+        """Return the current input source."""
+        return self.coordinator.data.get("source")
+
+    @property
+    def source_list(self) -> list[str] | None:
+        """Return a list of available input sources for the UI."""
+        # Present the canonical source names from the coordinator mapping
+        return list(SOURCE_ID_TO_NAME.values())
+
+    async def async_select_source(self, source: str) -> None:
+        """Select input source (called from UI)."""
+        # Delegate to coordinator which will write the GATT characteristic
+        await self.coordinator.set_source(source)
 
     async def async_set_volume_level(self, volume: float) -> None:
         """Set volume level, range 0..1."""
